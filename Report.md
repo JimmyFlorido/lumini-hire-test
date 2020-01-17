@@ -301,7 +301,7 @@ enem2 %>%
 ```
 Aproximadamente 27.3% de alunos aptos a participar do Prouni, não conseguem ser incluídos no processo de seleção por insuficiência de nota, de desempenho.
 
-# Assim, será feita uma exploração dos dados para descobrir algum fator importante que impede essa expressivo grupo de candidatos de ao menos atingir a pontuação mínima. 
+# Neste ponto, é importante entender quem são esses candidatos aptos ao Prouni, que não alcançaram a pontuação mínima, para entender se há algum fator externo que seja determinantes para o sucesso deles na prova
 
 Verificar as proporções de estudantes que realmente estão fazendo o ENEM para conquistar uma bolsa de estudos. Compare essas proporções com os grupos de candidatos de baixo rendimento (que não vão conseguir entrar no Prouni) com aqueles tiveram um melhor rendimento na prova. A ideia é ver se o baixo rendimento decorre da baixa motivação dos candidatos. 
 
@@ -328,9 +328,7 @@ Sim |	627 |	754 |	83.16
 
 Não se pode afirmar que os estudantes que não seguiram boa nota não são motivados: resguardadas as devidas proporções estatísticas, não se pode afirmar que a diferença entre os grupos de candidatos que não foram bem entre os que foram bem, se deve à diferença significativa na quantidade de estudantes com ambição de conseguir uma bolsa de estudos. 
 
-Neste ponto, é importante entender quem são esse candidatos aptos ao Prouni, mas quem não alcançaram a pontuação mínima, para entender se há algum fator externo que seja determinantes para o sucesso deles na prova
-
-Qual é a UF de residência desses candidatos aptos ao Prouni? 
+Qual é a UF de residência desses candidatos de baixo rendimento? 
 
 ```{r STATES}
 
@@ -371,7 +369,10 @@ leaflet(states) %>%
             title = "Nº de candidatos aptos ao Prouni")
 
 ```
+## Distribuição dos candidatos de baixo rendimento entre os estados do Brasil
 ![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/8.png "map")
+
+Nota-se que a maioria está concentrada em São Paulo, e principlamente, no Ceará. Ou seja, é necessário avaliar tambéḿ (com outra base de dados) as condições do ensino médio cearense para entender porque esse alunos não foram bem no ENEM. 
 
 Onde a performance desses alunos de baixo rendimento peca? Mais em matemática, redação ou outro aspecto da prova?
 
@@ -445,6 +446,8 @@ enem2 %>%
   
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/9.png "eja")
+
 Não é significativa a quantidade de estudantes que fizeram o EJA. 
 
 Qual é a cor de pele desses estudantes? E gênero e idade?
@@ -511,6 +514,10 @@ enem2 %>%
         axis.text.x = element_text(size = 10.5))
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/10.png "idade")
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/11.png "sexo")
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/12.png "cor")
+
 Grande parte dessa amostra são jovens mulheres negras. Acrescenta-se que essa amostra não difere-se muito da população geral de alunos aptos a participar do Prouni. 
 
 É significativa alguma necessidade especial (gestante, lactante) dentro dessa amostra?
@@ -551,6 +558,12 @@ enem2 %>%
   mutate(Proporção = `Não conseguiu`/(Conseguiu + `Não conseguiu`))
 
 ```
+Trabalha? | ConseguiuProuni | NãoConseguiuProuni | Proporção(%)
+------------ | ------------- | ------------- | -------------
+Continuo |	242 |	80 |	24.84 
+Nunca |	1480 |	572 |	27.87 
+Sim, mas não agora |	285 |	102 |	26.35 
+
 Os alunos aptos ao Prouni que não foram bem na prova, em grande parte, nunca trabalhou na vida, e isso não se difere muito dos que foram bem-sucedidos na prova. 
 
 Quantos dessa amostra tiveram que viajar para fazer a prova do Enem? Compare o município de residência com o município da prova.
@@ -570,7 +583,12 @@ enem2 %>%
   mutate(Percentual = round((NãoConseguiram/Candidatos)*100, 2))
 
 ```
-Parece promissora essa diferença - fazer numa cidade diferente, afeta no desempenho - mas para ter uma evidência mais robusta, vamos executar um teste de hipóteses sobre as notas dos estudante que fizeram e não fizeram a prova na cidade de residência. 
+ViajouNoENEM? | Candidatos | NãoConseguiuProuni | Proporção(%)
+------------ | ------------- | ------------- | -------------
+Sim |	702 |	220 |	31.34 
+Não |	2059 |	534 |	25.93 
+
+Parece promissora essa diferença - fazer numa cidade diferente, afeta no desempenho (mais candidatos de baixo rendimento) - mas para ter uma evidência mais robusta, vamos executar um teste de hipóteses sobre as notas dos estudante que fizeram e não fizeram a prova na cidade de residência. 
 
 ```{r DISTANCE2}
 
@@ -596,6 +614,8 @@ t.test(for_test1, for_test2,
        var.equal = TRUE)
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/13.png "t-test")
+
 Com o teste de hipótese, pode-se afirmar que há evidências (embora não conclusivas) de que fazer ou não a prova na cidade de residência, impacta no resultado do ENEM. 
 
 
