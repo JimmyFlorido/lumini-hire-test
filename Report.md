@@ -5,7 +5,7 @@ date: "15/01/2020"
 output: html_document
 ---
 
-Pacotes necessários
+Pacotes necessários. Se não tiver, instale eles por meio do install.packages("NOME_DO_PACOTE")
 
 ```{r PACKAGES, include=FALSE}
 
@@ -75,7 +75,7 @@ Até 3 salários mínimos: do A até o F
 
 ---
 
-"Como é possível segmentar os inscritos de forma clara e objetiva com o intuito de justificar investimentos em educação destinados a certas parcelas de alunos?" 
+# Como é possível segmentar os inscritos de forma clara e objetiva com o intuito de justificar investimentos em educação destinados a certas parcelas de alunos?
 
 Na prática, será criada uma regra de classificação para confirmar se determinadas regras referentes a programas, como o Prouni, fazem sentido. 
 
@@ -268,4 +268,334 @@ rpart.plot(arvore1)
 ```
 ![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/7.png "tree")
 
-Através da árvore de decisão, podemos segmentar os candidatos para justificar determinados investimentos, como o Prouni, a determinadas parcelas de estudantes. 
+# Através da árvore de decisão, podemos segmentar os candidatos para justificar determinados investimentos, como o Prouni, a determinadas parcelas de estudantes. 
+
+---
+
+Nota-se que o fato de candidato ter estudado em escola privada já eleva subtancialmente as chances dele conseguir uma pontuação acima da média (83% de probabilidade), a ponto de ter cerca de 4 vezes mais chance do que um estudante de escola pública com renda menor do que R$ 1,100.0. O critério de renda na árvore de decisão parece estar adequado à regra do Prouni (até 3 salários mínimos - 2,640.0 reais -  de renda mensal para ser apto), pois a partir de 3,000 reais de renda mensal familiar, o candidato possui maior probabilidade (58%) de ter uma nota acima da média. Ou seja, as regras de participação do Prouni tem validade estatística, não é algo feito de forma discricionária (conforme a conveniência). 
+
+---
+
+Além de confirmar a segmentação por meio de classificação, é importante entender quem são os alunos que estão tendo baixo rendimento: nota zero em redação e/ou pontuação menor do que 450 na prova do Enem. Estes não possuem nota mínima para participar do Prouni, e assim, não tem acesso a bolsas de estudo integrais ou parciais.
+
+Por que pensar nessa amostra específica de candidatos ao ENEM? Porque o Prouni, na prática, é um investimento público decorrente da isenção de impostos a instituições privadas de ensino, cujo isenção é proporcional ao número de bolsas usadas. E infelizmente muitas das bolsas de estudo promovidas pelo Prouni não são preenchidas, e isso tem várias repercussões, desde a redução de bolsas integrais até o aumento do EAD.
+https://www1.folha.uol.com.br/educacao/2019/07/prouni-tem-menor-oferta-de-bolsas-integrais-e-para-cursos-presenciais.shtml 
+
+Qual é a porcentagem desses candidatos de baixo rendimento na amostra?
+
+```{r WHO}
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1
+         ) %>%
+  group_by(SEM_PROUNI) %>% 
+  summarise(Candidatos = n()) %>% 
+  as.data.frame()
+
+```
+
+```{r WHO2}
+754/(2007+754)
+```
+Aproximadamente 27.3% de alunos aptos a participar do Prouni, não conseguem ser incluídos no processo de seleção por insuficiência de nota, de desempenho.
+
+# Assim, será feita uma exploração dos dados para descobrir algum fator importante que impede essa expressivo grupo de candidatos de ao menos atingir a pontuação mínima. 
+
+Verificar as proporções de estudantes que realmente estão fazendo o ENEM para conquistar uma bolsa de estudos. Compare essas proporções com os grupos de candidatos de baixo rendimento (que não vão conseguir entrar no Prouni) com aqueles tiveram um melhor rendimento na prova. A ideia é ver se o baixo rendimento decorre da baixa motivação dos candidatos. 
+
+```{r MOTIVATION}
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1
+         ) %>%
+  mutate(Motivados = ifelse(TP_BOLSAS == 5, 1, 0)) %>% # Na pesquisa, quanto mais próximo de 5, maior é o interesse do candidato em conseguir uma bolsa de estudos. Ou seja, se ele marcou 5: ele quer muito uma bolsa - é um motivado. 
+  group_by(SEM_PROUNI) %>% 
+  summarise(Motivados = sum(Motivados),
+            Candidatos = n()) %>% 
+  as.data.frame() %>% 
+  mutate(Porcentagem = round((Motivados/Candidatos)*100, 2))
+
+```
+
+Sem Prouni? | Motivados | CandidatosProuni | Motivados (%)
+------------ | ------------- | ------------- | -------------
+Não |	1,584 |	2,007 |	78.92
+Sim |	627 |	754 |	83.16
+
+Não se pode afirmar que os estudantes que não seguiram boa nota não são motivados: resguardadas as devidas proporções estatísticas, não se pode afirmar que a diferença entre os grupos de candidatos que não foram bem entre os que foram bem, se deve à diferença significativa na quantidade de estudantes com ambição de conseguir uma bolsa de estudos. 
+
+Neste ponto, é importante entender quem são esse candidatos aptos ao Prouni, mas quem não alcançaram a pontuação mínima, para entender se há algum fator externo que seja determinantes para o sucesso deles na prova
+
+Qual é a UF de residência desses candidatos aptos ao Prouni? 
+
+```{r STATES}
+
+cidades3 <- cidades %>% 
+  filter(CAPITAL == "S") %>%
+  mutate(lon = as.character(LONGITUDE),
+         lat = as.character(LATITUDE)) %>% 
+  mutate_at(vars(lon, lat), list(~as.numeric(as.character(.)))) %>% 
+  select(UFCOD, lon, lat)
+
+states <- enem2 %>%
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         SEM_PROUNI == 1
+  ) %>%
+  group_by(CO_UF_RESIDENCIA, UF = SG_UF_RESIDENCIA) %>%
+  summarise(Candidatos = n(),
+            NãoConseguiram = sum(SEM_PROUNI)) %>%
+  as.data.frame() %>%
+  left_join(cidades3, by = c("CO_UF_RESIDENCIA" = "UFCOD"))
+  
+pal <- colorNumeric(palette = "RdYlBu", 
+                    domain = states$Candidatos)
+
+leaflet(states) %>% 
+  addTiles() %>%
+  addCircleMarkers(~lon, ~lat, 
+                   color = ~pal(Candidatos),
+                   fillOpacity = 1.0,
+                   radius = 15.0,
+                   label = ~UF,
+                   labelOptions = labelOptions(noHide = TRUE, 
+                                               textsize = 10.0)) %>% 
+  addLegend(pal = pal, 
+            values = ~Candidatos, 
+            opacity = 1,
+            title = "Nº de candidatos aptos ao Prouni")
+
+```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/8.png "map")
+
+Onde a performance desses alunos de baixo rendimento peca? Mais em matemática, redação ou outro aspecto da prova?
+
+```{r LOW SCORE}
+
+score <- enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         SEM_PROUNI == 1,
+         CAND_PROUNI == 1
+         ) %>%
+  summarise(Humanas = sd(NU_NOTA_CH),
+            Naturais = sd(NU_NOTA_CN),
+            Língua = sd(NU_NOTA_LC),
+            Matemática = sd(NU_NOTA_MT),
+            Redação = sd(NU_NOTA_REDACAO)) %>% 
+  as.data.frame() %>% 
+  gather(key = "Matéria", value = "NotaDesvioPadrão")
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         SEM_PROUNI == 1,
+         CAND_PROUNI == 1
+         ) %>%
+  summarise(Humanas = mean(NU_NOTA_CH),
+            Naturais = mean(NU_NOTA_CN),
+            Língua = mean(NU_NOTA_LC),
+            Matemática = mean(NU_NOTA_MT),
+            Redação = mean(NU_NOTA_REDACAO)) %>% 
+  as.data.frame() %>% 
+  gather(key = "Matéria", value = "NotaMédia") %>% 
+  left_join(score, by = "Matéria")
+
+```
+Matéria | NotaMédia | NotaDesvioPadrão
+------------ | ------------- | -------------
+Humanas |	446.51 |	50.53 
+Naturais |	421.45 |	45.18 
+Língua |	445.48 |	51.43 
+Matemática |	410.35 |	54.93 
+Redação |	358.48 |	142.62 
+
+A prova de redação é o principal "calcanhar de aquiles" desses candidatos, o que é atestado pela nota média baixa relativa, além do maior desvio padrão. 
+
+Quantos desses alunos já fizeram o EJA (Educação de Jovens e Adultos?
+
+```{r EJA}
+
+theme_set(theme_minimal())
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         SEM_PROUNI == 1
+         ) %>%
+  mutate(EJA = ifelse(TP_ENSINO == 3, "Fez", "Não fez")) %>% 
+  group_by(EJA) %>% 
+  summarise(Candidatos = n()) %>% 
+  as.data.frame() %>% 
+  ggplot() +
+  aes(x = EJA, y = Candidatos) +
+  geom_bar(stat = "identity", fill = "orange", width = 0.4) +
+  geom_text(aes(label = Candidatos), vjust=-0.3, size=4.5) +
+  labs(y = element_blank(),
+       title = "Nº de candidatos de baixo rendimento",
+       subtitle = "Presença no EJA")+
+  theme(axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 13.5))
+  
+
+```
+Não é significativa a quantidade de estudantes que fizeram o EJA. 
+
+Qual é a cor de pele desses estudantes? E gênero e idade?
+
+```{r DEMO STATS, warning=FALSE}
+
+theme_set(theme_minimal())
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         SEM_PROUNI == 1
+         ) %>%
+  ggplot() +
+  aes(x = NU_IDADE) +
+  geom_histogram(fill = "red") +
+  labs(x = "Idade", 
+       y = "Frequência",
+       title = "Distribuição dos candidatos de baixo rendimento",
+       subtitle = "Por idade")+
+  scale_x_continuous(breaks = c(seq(15, 65, by = 2)))
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         SEM_PROUNI == 1
+         ) %>%
+  group_by(Sexo = TP_SEXO) %>% 
+  summarise(Candidatos = n()) %>% 
+  as.data.frame() %>% 
+  ggplot() +
+  aes(x = Sexo, y = Candidatos) +
+  geom_bar(stat = "identity", fill = "hotpink", width = 0.4) +
+  geom_text(aes(label = Candidatos), vjust=-0.3, size=3.5) +
+  labs(y = element_blank(),
+       title = "Nº de candidatos de baixo rendimento",
+       subtitle = "Por sexo")+
+  theme(axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 13.5))
+
+cor_tabla <- data.frame(Cod = c(0:6), TP_COR_RACA2 = c(NA, "Branca", "Preta", "Parda", "Amarela", "Indígena", "Não sabe"))
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         SEM_PROUNI == 1
+         ) %>%
+  left_join(cor_tabla, by = c("TP_COR_RACA" = "Cod")) %>% 
+  group_by(`Cor da Pele` = TP_COR_RACA2) %>% 
+  summarise(Candidatos = n()) %>% 
+  as.data.frame() %>% 
+  ggplot() +
+  aes(x = `Cor da Pele`, y = Candidatos) +
+  geom_bar(stat = "identity", fill = "purple") +
+  geom_text(aes(label = Candidatos), vjust=-0.3, size=4.5) +
+  labs(y = element_blank(), 
+       x = element_blank(),
+       title = "Nº de candidatos de baixo rendimento",
+       subtitle = "Por cor de pele")+
+  theme(axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 10.5))
+
+```
+Grande parte dessa amostra são jovens mulheres negras. Acrescenta-se que essa amostra não difere-se muito da população geral de alunos aptos a participar do Prouni. 
+
+É significativa alguma necessidade especial (gestante, lactante) dentro dessa amostra?
+
+```{r YOUNG MOTHER}
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         SEM_PROUNI == 1
+         ) %>%
+  group_by(IN_LACTANTE) %>% 
+  summarise(Candidatos =n()) %>% 
+  as.data.frame()
+
+```
+Quase nenhuma delas é mãe. 
+
+Essa amostra trabalha e estuda de noite?
+
+```{r JOB}
+
+trabalho_tabla <- data.frame(Cod = c("A", "B", "C"), 
+                             TP_TRABALHO2 = c("Nunca", "Sim, mas não agora", "Continuo"))
+
+enem2 %>% 
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1
+         ) %>%
+  mutate(SEM_PROUNI = ifelse(SEM_PROUNI == 1, "Não conseguiu", "Conseguiu")) %>% 
+  left_join(trabalho_tabla, by = c("TP_TRABALHO" = "Cod")) %>% 
+  group_by(`Trabalha?` = TP_TRABALHO2, SEM_PROUNI) %>% 
+  summarise(Candidatos = n()) %>% 
+  as.data.frame() %>% 
+  spread(SEM_PROUNI, Candidatos) %>% 
+  mutate(Proporção = `Não conseguiu`/(Conseguiu + `Não conseguiu`))
+
+```
+Os alunos aptos ao Prouni que não foram bem na prova, em grande parte, nunca trabalhou na vida, e isso não se difere muito dos que foram bem-sucedidos na prova. 
+
+Quantos dessa amostra tiveram que viajar para fazer a prova do Enem? Compare o município de residência com o município da prova.
+
+```{r DISTANCE}
+
+enem2 %>% 
+    filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1
+         ) %>%
+  mutate(Cidade = ifelse(as.character(NO_MUNICIPIO_RESIDENCIA) == as.character(NO_MUNICIPIO_PROVA), "Mesma Cidade", "Cidade Diferente")) %>% 
+  group_by(Cidade) %>% 
+  summarise(Candidatos = n(),
+            NãoConseguiram = sum(SEM_PROUNI)) %>% 
+  as.data.frame() %>% 
+  mutate(Percentual = round((NãoConseguiram/Candidatos)*100, 2))
+
+```
+Parece promissora essa diferença - fazer numa cidade diferente, afeta no desempenho - mas para ter uma evidência mais robusta, vamos executar um teste de hipóteses sobre as notas dos estudante que fizeram e não fizeram a prova na cidade de residência. 
+
+```{r DISTANCE2}
+
+for_test1 <- enem2 %>% 
+  mutate(Cidade = ifelse(as.character(NO_MUNICIPIO_RESIDENCIA) == as.character(NO_MUNICIPIO_PROVA), "Mesma Cidade", "Cidade Diferente")) %>%
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         Cidade == "Mesma Cidade"
+  ) %>%
+  select(FINAL_NOTA)
+
+for_test2 <- enem2 %>% 
+  mutate(Cidade = ifelse(as.character(NO_MUNICIPIO_RESIDENCIA) == as.character(NO_MUNICIPIO_PROVA), "Mesma Cidade", "Cidade Diferente")) %>%
+  filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         Cidade == "Cidade Diferente"
+  ) %>%
+  select(FINAL_NOTA)
+
+t.test(for_test1, for_test2, 
+       var.equal = TRUE)
+
+```
+Com o teste de hipótese, pode-se afirmar que há evidências (embora não conclusivas) de que fazer ou não a prova na cidade de residência, impacta no resultado do ENEM. 
+
+
