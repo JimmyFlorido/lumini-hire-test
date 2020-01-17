@@ -81,9 +81,9 @@ Na prática, será criada uma regra de classificação para confirmar se determi
 
 O Programa Universidade para Todos - Prouni tem como finalidade a concessão de bolsas de estudo integrais e parciais em cursos de graduação e sequenciais de formação específica, em instituições de ensino superior privadas. Criado pelo Governo Federal em 2004 e institucionalizado pela Lei nº 11.096, em 13 de janeiro de 2005 oferece, em contrapartida, isenção de tributos àquelas instituições que aderem ao Programa. Masi informações aqui: http://prouniportal.mec.gov.br/o-programa 
 
-Mas adianta-se que os requisitos para ser apto ao Prouni é simples: ter cursado o ensino médio no ensino público, e ter renda familiar menor do que 3 salários mínimos (R$ 2,640.0 em 2016). Mas além disso, é preciso obter, no mínimo, 450 pontos na nota final do ENEM, e não zerar a prova de redação desse exame. Nota-se que já há uma boa série de critérios para criar uma regra preliminar de classificação por meio de decision tree (árvore de decisão). 
+Mas adianta-se que os requisitos para ser apto ao Prouni são simples: ter cursado o ensino médio em instituição pública, e ter renda familiar mensal menor do que 3 salários mínimos (R$ 2,640.0 em 2016). Mas além disso, é preciso obter, no mínimo, 450 pontos na nota final do ENEM, e não zerar a prova de redação desse exame. Nota-se que já há uma boa série de critérios para criar uma regra preliminar de classificação por meio de decision tree (árvore de decisão). 
 
-Mas antes disso, é necessário explorar aguns aspectos da base de dados. Primeiro: adicione ou mude algumas variáveis que te ajudarão a entender essa população de candidatos.
+Mas antes de montar uma árvore de decisão, é necessário explorar alguns aspectos da base de dados. Primeiro: adicione ou mude algumas variáveis que te ajudarão a entender essa população de candidatos. 
 
 ```{r FIX DATASET2}
 
@@ -135,8 +135,8 @@ mean(enem2$FINAL_NOTA, na.rm = TRUE)
 A média da nota final no ENEM é 506.6, e nota-se que essa é uma distribuição que segue o padrão gaussiano (normal).
 É importante destacar que essa média está acima do mínimo exigido para participar do Prouni, ou seja, o custo de entrada para o Prouni para determinada faixa dos candidatos, não é necessariamente alta. 
 
-Antes de fazer a decision tree, é necessário testar algumas relações, a começar pela renda: ela impacta na nota final do ENEM? 
-É importante fazer isso para entender se o crítério de renda, e se a pontuação mínima de 450 faz sentido. 
+Sobre o aspecto da renda familiar: ela impacta na nota final do ENEM? 
+É importante fazer isso para entender se, além da pontuação mínima de 450, o crítério de renda faz sentido. 
 
 ```{r EARNING VS SCORE, warning=FALSE}
 
@@ -168,7 +168,7 @@ enem2 %>%
 ```
 ![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/4.png "income1")
 
-Infelizmente, a renda é um fator muito preponderante para decidir a pontuação no ENEM, conforme demosntra o gráfico. E é justificável as regras do PROUNI pautarem a renda e uma pontuação abaixo da média para delimitar o acesso ao programa. 
+Infelizmente, a renda é um fator muito preponderante para decidir a pontuação no ENEM, conforme demonstra o gráfico. E é justificável as regras do PROUNI pautarem a renda e uma pontuação abaixo da média para delimitar o acesso ao programa. 
 
 O fato do candidato ter feito ensino médio no colégio público afeta o desempenho dele no ENEM?
 
@@ -207,7 +207,7 @@ enem2 %>%
 
 Afeta. Grande parte das notas mais baixas concentram-se não somente naqueles que têm renda mais baixa, mas naqueles que foram ensinados em colégios públicos. 
 
-Há a possibilidade de explorar a questão de cor de pele (infelizmente, há uma correlação forte entre renda baixa e cor de pele negra) ou região, mas de certa forma, são fatores que estarão relacionados à renda, por isso, não há a necessidade de explorar tanto. 
+Há a possibilidade de explorar a questão de cor de pele ou região, mas de certa forma, são fatores que estarão relacionados à renda (infelizmente, há uma correlação forte entre renda baixa e cor de pele negra), por isso, não há a necessidade de avançar sobre esses tóṕicos. 
 
 No entanto, vale a pena verificar se a questão de sexo tem algum aspecto visual relevante para o desempenho no ENEM. 
 
@@ -237,7 +237,7 @@ enem2 %>%
 ```
 ![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/6.png "income3")
 
-Não há um padrão visível. Podemos descartar o sexo como algo importante para favorecer algum grupo. 
+Não há um padrão visível. Podemos descartar o sexo como um critério que afeta o desempenho no ENEM. 
 
 Fazer a árvore de decisão, a fim de verificar se as regras para o Prouni, de fato, fazem sentido ao considerar renda e instituição de ensino.
 
@@ -272,7 +272,11 @@ rpart.plot(arvore1)
 
 ---
 
-Nota-se que o fato de candidato ter estudado em escola privada já eleva subtancialmente as chances dele conseguir uma pontuação acima da média (83% de probabilidade), a ponto de ter cerca de 4 vezes mais chance do que um estudante de escola pública com renda menor do que R$ 1,100.0. O critério de renda na árvore de decisão parece estar adequado à regra do Prouni (até 3 salários mínimos - 2,640.0 reais -  de renda mensal para ser apto), pois a partir de 3,000 reais de renda mensal familiar, o candidato possui maior probabilidade (58%) de ter uma nota acima da média. Ou seja, as regras de participação do Prouni tem validade estatística, não é algo feito de forma discricionária (conforme a conveniência). 
+O fato do candidato ter estudado em escola privada já eleva subtancialmente as chances dele conseguir uma pontuação acima da média (83% de probabilidade), a ponto de ter cerca de 4 vezes mais chance do que um estudante de escola pública com renda menor do que R$ 1,100.0. 
+
+O critério de renda na árvore de decisão parece estar adequado à regra do Prouni (até 3 salários mínimos - 2,640.0 reais -  de renda mensal para ser apto), pois a partir de 3,000 reais de renda mensal familiar, o candidato possui maior probabilidade (58%) de ter uma nota acima da média. 
+
+Ou seja, as regras de participação do Prouni tem validade estatística, não é algo feito de forma discricionária (conforme a conveniência). 
 
 ---
 
@@ -303,7 +307,7 @@ Aproximadamente 27.3% de alunos aptos a participar do Prouni, não conseguem ser
 
 # Neste ponto, é importante entender quem são esses candidatos aptos ao Prouni, que não alcançaram a pontuação mínima, para entender se há algum fator externo que seja determinantes para o sucesso deles na prova
 
-Verificar as proporções de estudantes que realmente estão fazendo o ENEM para conquistar uma bolsa de estudos. Compare essas proporções com os grupos de candidatos de baixo rendimento (que não vão conseguir entrar no Prouni) com aqueles tiveram um melhor rendimento na prova. A ideia é ver se o baixo rendimento decorre da baixa motivação dos candidatos. 
+Verificar as proporções de estudantes que realmente estão fazendo o ENEM para conquistar uma bolsa de estudos. Compare essas proporções com os grupos de candidatos de baixo rendimento (que não vão conseguir entrar no Prouni) com aqueles que tiveram um melhor rendimento na prova. A ideia é ver se o baixo rendimento decorre da baixa motivação dos candidatos. 
 
 ```{r MOTIVATION}
 
@@ -326,7 +330,7 @@ Sem Prouni? | Motivados | CandidatosProuni | Motivados (%)
 Não |	1,584 |	2,007 |	78.92
 Sim |	627 |	754 |	83.16
 
-Não se pode afirmar que os estudantes que não seguiram boa nota não são motivados: resguardadas as devidas proporções estatísticas, não se pode afirmar que a diferença entre os grupos de candidatos que não foram bem entre os que foram bem, se deve à diferença significativa na quantidade de estudantes com ambição de conseguir uma bolsa de estudos. 
+Não se pode afirmar que não são motivados os estudantes que não seguiram boa nota: resguardadas as devidas proporções estatísticas, não se pode afirmar que entre os candidatos que foram bem e mal no ENEM, há uma diferença significativa na quantidade de estudantes com ambição de conseguir uma bolsa de estudos. 
 
 Qual é a UF de residência desses candidatos de baixo rendimento? 
 
@@ -369,12 +373,12 @@ leaflet(states) %>%
             title = "Nº de candidatos aptos ao Prouni")
 
 ```
-## Distribuição dos candidatos de baixo rendimento entre os estados do Brasil
+### Distribuição dos candidatos de baixo rendimento entre os estados do Brasil
 ![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/8.png "map")
 
-Nota-se que a maioria está concentrada em São Paulo, e principlamente, no Ceará. Ou seja, é necessário avaliar tambéḿ (com outra base de dados) as condições do ensino médio cearense para entender porque esse alunos não foram bem no ENEM. 
+Nota-se que a maioria está concentrada em São Paulo, e principalmente, no Ceará. Ou seja, é necessário avaliar tambéḿ (com outra base de dados) as condições do ensino médio cearense para entender porque esse alunos não foram bem no ENEM. 
 
-Onde a performance desses alunos de baixo rendimento peca? Mais em matemática, redação ou outro aspecto da prova?
+Onde a performance desses alunos de baixo rendimento peca? Mais em matemática, redação ou em outro aspecto da prova?
 
 ```{r LOW SCORE}
 
@@ -418,7 +422,7 @@ Redação |	358.48 |	142.62
 
 A prova de redação é o principal "calcanhar de aquiles" desses candidatos, o que é atestado pela nota média baixa relativa, além do maior desvio padrão. 
 
-Quantos desses alunos já fizeram o EJA (Educação de Jovens e Adultos?
+Quantos desses alunos já fizeram o EJA (Educação de Jovens e Adultos)?
 
 ```{r EJA}
 
@@ -450,7 +454,7 @@ enem2 %>%
 
 Não é significativa a quantidade de estudantes que fizeram o EJA. 
 
-Qual é a cor de pele desses estudantes? E gênero e idade?
+Qual é a cor de pele desses estudantes de baixo rendimento? E gênero e idade?
 
 ```{r DEMO STATS, warning=FALSE}
 
@@ -520,7 +524,7 @@ enem2 %>%
 
 Grande parte dessa amostra são jovens mulheres negras. Acrescenta-se que essa amostra não difere-se muito da população geral de alunos aptos a participar do Prouni. 
 
-É significativa alguma necessidade especial (gestante, lactante) dentro dessa amostra?
+Desse grupo de candidatos, há muitas mães jovens e adolescentes?
 
 ```{r YOUNG MOTHER}
 
@@ -535,9 +539,9 @@ enem2 %>%
   as.data.frame()
 
 ```
-Quase nenhuma delas é mãe. 
+Quase nenhuma delas (só 1 teve necessidade de amamentação durante a prova) é mãe. 
 
-Essa amostra trabalha e estuda de noite?
+Essa amostra trabalha (o que impede um melhor proveito do estudo)?
 
 ```{r JOB}
 
@@ -564,7 +568,7 @@ Continuo |	242 |	80 |	24.84
 Nunca |	1480 |	572 |	27.87 
 Sim, mas não agora |	285 |	102 |	26.35 
 
-Os alunos aptos ao Prouni que não foram bem na prova, em grande parte, nunca trabalhou na vida, e isso não se difere muito dos que foram bem-sucedidos na prova. 
+Os alunos aptos ao Prouni que não foram bem na prova, em grande parte, nunca trabalhou na vida, e isso não se difere muito dos que foram bem-sucedidos na prova. Por enquanto, não se pode dizer que o trabalho na adolescência é um obstáculo importante. 
 
 Quantos dessa amostra tiveram que viajar para fazer a prova do Enem? Compare o município de residência com o município da prova.
 
@@ -588,7 +592,7 @@ ViajouNoENEM? | Candidatos | NãoConseguiuProuni | Proporção(%)
 Sim |	702 |	220 |	31.34 
 Não |	2059 |	534 |	25.93 
 
-Parece promissora essa diferença - fazer numa cidade diferente, afeta no desempenho (mais candidatos de baixo rendimento) - mas para ter uma evidência mais robusta, vamos executar um teste de hipóteses sobre as notas dos estudante que fizeram e não fizeram a prova na cidade de residência. 
+Parece promissora essa diferença - fazer a prova numa cidade diferente, afeta no desempenho (mais candidatos de baixo rendimento) - mas para ter uma evidência mais robusta, vamos executar um teste de hipóteses sobre as notas dos estudante que fizeram e não fizeram a prova na cidade de residência. 
 
 ```{r DISTANCE2}
 
