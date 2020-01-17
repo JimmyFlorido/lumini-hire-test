@@ -44,8 +44,7 @@ enem2 <- enem %>%
 str(enem2)
   
 ```
-
-![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/master/1.png "Descriptive")
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/1.png "Descriptive")
 
 ---
 
@@ -106,6 +105,7 @@ Faça uma análise descritiva dessa população
 skim(enem2)
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/2.png "Descriptive2")
 
 Compreender a distribuição média das notas no ENEM de 2016. 
 
@@ -127,7 +127,7 @@ enem2 %>%
                      breaks = c(seq(300, 800, by = 50)))
 
 ```
-
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/3.png "Score")
 
 ```{r SCORE AVERAGE}
 mean(enem2$FINAL_NOTA, na.rm = TRUE)
@@ -166,6 +166,8 @@ enem2 %>%
   theme(legend.position = "top")
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/4.png "income1")
+
 Infelizmente, a renda é um fator muito preponderante para decidir a pontuação no ENEM, conforme demosntra o gráfico. E é justificável as regras do PROUNI pautarem a renda e uma pontuação abaixo da média para delimitar o acesso ao programa. 
 
 O fato do candidato ter feito ensino médio no colégio público afeta o desempenho dele no ENEM?
@@ -201,6 +203,8 @@ enem2 %>%
   theme(legend.position = "top")
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/5.png "income2")
+
 Afeta. Grande parte das notas mais baixas concentram-se não somente naqueles que têm renda mais baixa, mas naqueles que foram ensinados em colégios públicos. 
 
 Há a possibilidade de explorar a questão de cor de pele (infelizmente, há uma correlação forte entre renda baixa e cor de pele negra) ou região, mas de certa forma, são fatores que estarão relacionados à renda, por isso, não há a necessidade de explorar tanto. 
@@ -231,6 +235,8 @@ enem2 %>%
   theme(legend.position = "top")
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/6.png "income3")
+
 Não há um padrão visível. Podemos descartar o sexo como algo importante para favorecer algum grupo. 
 
 Fazer a árvore de decisão, a fim de verificar se as regras para o Prouni, de fato, fazem sentido ao considerar renda e instituição de ensino.
@@ -260,4 +266,6 @@ summary(arvore1)
 rpart.plot(arvore1)
 
 ```
+![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/7.png "tree")
+
 Através da árvore de decisão, podemos segmentar os candidatos para justificar determinados investimentos, como o Prouni, a determinadas parcelas de estudantes. 
