@@ -77,9 +77,9 @@ Até 3 salários mínimos: do A até o F
 
 # Como é possível segmentar os inscritos de forma clara e objetiva com o intuito de justificar investimentos em educação destinados a certas parcelas de alunos?
 
-Na prática, será criada uma regra de classificação para confirmar se determinadas regras referentes a programas, como o Prouni, fazem sentido. 
+Será criada uma regra de classificação para confirmar se determinadas regras referentes a programas, como o Prouni, fazem sentido. Na prática, é verificar se as regras para concessão de bolsa estão atendendo a critérios estatísticos ou a mais pura conveniência por propósitos políticos. 
 
-O Programa Universidade para Todos - Prouni tem como finalidade a concessão de bolsas de estudo integrais e parciais em cursos de graduação e sequenciais de formação específica, em instituições de ensino superior privadas. Criado pelo Governo Federal em 2004 e institucionalizado pela Lei nº 11.096, em 13 de janeiro de 2005 oferece, em contrapartida, isenção de tributos àquelas instituições que aderem ao Programa. Masi informações aqui: http://prouniportal.mec.gov.br/o-programa 
+O Programa Universidade para Todos - Prouni tem como finalidade a concessão de bolsas de estudo integrais e parciais em cursos de graduação e sequenciais de formação específica, em instituições de ensino superior privadas. Criado pelo Governo Federal em 2004 e institucionalizado pela Lei nº 11.096, em 13 de janeiro de 2005 oferece, em contrapartida, isenção de tributos àquelas instituições que aderem ao Programa. Mais informações aqui: http://prouniportal.mec.gov.br/o-programa 
 
 Mas adianta-se que os requisitos para ser apto ao Prouni são simples: ter cursado o ensino médio em instituição pública, e ter renda familiar mensal menor do que 3 salários mínimos (R$ 2,640.0 em 2016). Mas além disso, é preciso obter, no mínimo, 450 pontos na nota final do ENEM, e não zerar a prova de redação desse exame. Nota-se que já há uma boa série de critérios para criar uma regra preliminar de classificação por meio de decision tree (árvore de decisão). 
 
@@ -261,16 +261,17 @@ arvore1 <- rpart(formula = ABOVE_AVG ~ TP_RENDA2 + `Tipo de escola` + Sexo,
                 data = enemtree, 
                 method = 'class')
 
-summary(arvore1)
+printcp(arvore1)
 
 rpart.plot(arvore1)
 
 ```
 ![alt text](https://github.com/JimmyFlorido/lumini-hire-test/blob/FranciscoLira/Images/7.png "tree")
 
-# Através da árvore de decisão, podemos segmentar os candidatos para justificar determinados investimentos, como o Prouni, a determinadas parcelas de estudantes. 
+# Através da árvore de decisão, podemos segmentar os candidatos para justificar determinados investimentos, como o Prouni, a determinadas parcelas de estudantes. As regras de participação do Prouni tem validade estatística.
 
 ---
+Antes de qualquer coisa, é preciso dizer que essa árvore de decisão  não tem alto poder de predição: o root node error é de aproximadamente 43%, isto é, a primeira raiz dessa árvore explica somente 43% da amostra ter ou não uma pontuação acima da média. No entanto, o propósito aqui não é ter feito um modelo que obtenha a maior acurácia (tanto que não separou uma amostra para teste do modelo), mas verificar se os critérios do Prouni fazem sentido com os dados mostrados. 
 
 O fato do candidato ter estudado em escola privada já eleva subtancialmente as chances dele conseguir uma pontuação acima da média (83% de probabilidade), a ponto de ter cerca de 4 vezes mais chance do que um estudante de escola pública com renda menor do que R$ 1,100.0. 
 
@@ -305,7 +306,7 @@ enem2 %>%
 ```
 Aproximadamente 27.3% de alunos aptos a participar do Prouni, não conseguem ser incluídos no processo de seleção por insuficiência de nota, de desempenho.
 
-# Neste ponto, é importante entender quem são esses candidatos aptos ao Prouni, que não alcançaram a pontuação mínima, para entender se há algum fator externo que seja determinantes para o sucesso deles na prova
+# Neste ponto, é importante entender quem são esses candidatos aptos ao Prouni, que não alcançaram a pontuação mínima, para entender se há algum fator externo que seja determinante para o sucesso deles na prova
 
 Verificar as proporções de estudantes que realmente estão fazendo o ENEM para conquistar uma bolsa de estudos. Compare essas proporções com os grupos de candidatos de baixo rendimento (que não vão conseguir entrar no Prouni) com aqueles que tiveram um melhor rendimento na prova. A ideia é ver se o baixo rendimento decorre da baixa motivação dos candidatos. 
 
@@ -330,7 +331,7 @@ Sem Prouni? | Motivados | CandidatosProuni | Motivados (%)
 Não |	1,584 |	2,007 |	78.92
 Sim |	627 |	754 |	83.16
 
-Não se pode afirmar que não são motivados os estudantes que não seguiram boa nota: resguardadas as devidas proporções estatísticas, não se pode afirmar que entre os candidatos que foram bem e mal no ENEM, há uma diferença significativa na quantidade de estudantes com ambição de conseguir uma bolsa de estudos. 
+Não se pode afirmar que não são motivados os estudantes que não seguiram boa nota: eles têm maior quantidade de alunos dispostos a obter uma bolsa de estudos do que aqueles que tiveram melhor desempenho no ENEM. 
 
 Qual é a UF de residência desses candidatos de baixo rendimento? 
 
@@ -524,7 +525,7 @@ enem2 %>%
 
 Grande parte dessa amostra são jovens mulheres negras. Acrescenta-se que essa amostra não difere-se muito da população geral de alunos aptos a participar do Prouni. 
 
-Desse grupo de candidatos, há muitas mães jovens e adolescentes?
+Desse grupo de candidatos, há muitas mães jovens ou adolescentes?
 
 ```{r YOUNG MOTHER}
 
@@ -539,9 +540,9 @@ enem2 %>%
   as.data.frame()
 
 ```
-Quase nenhuma delas (só 1 teve necessidade de amamentação durante a prova) é mãe. 
+Quase nenhuma delas é mãe: só 1 teve necessidade de amamentação durante a prova. Não teve ninguém dessa amostra com necessidades de gestante durante o ENEM de 2016. 
 
-Essa amostra trabalha (o que impede um melhor proveito do estudo)?
+Essa amostra trabalha? Algo que poderia supostamente impedir um melhor proveito dos estudos. 
 
 ```{r JOB}
 
@@ -622,4 +623,23 @@ t.test(for_test1, for_test2,
 
 Com o teste de hipótese, pode-se afirmar que há evidências (embora não conclusivas) de que fazer ou não a prova na cidade de residência, impacta no resultado do ENEM. 
 
+Por fim, descubra qual é o estado que tem mais alunos que precisam viajar para fazer o ENEM.
+
+```{r DISTANCE3}
+
+enem2 %>% 
+  mutate(Cidade = ifelse(as.character(NO_MUNICIPIO_RESIDENCIA) == as.character(NO_MUNICIPIO_PROVA), 1, 0)) %>%
+    filter(IN_TREINEIRO == 0,
+         TP_PRESENCA == 1,
+         CAND_PROUNI == 1,
+         SEM_PROUNI == 1
+         ) %>%
+  group_by(UF = SG_UF_RESIDENCIA) %>% 
+  summarise(Candidatos = n(),
+            Viajou = sum(Cidade)) %>% 
+  as.data.frame() %>% 
+  arrange(desc(Viajou))
+
+```
+Assim como o Ceará lidera na quantidade de candidatos de baixo rendimento, também lidera na quantidade desses candidatos que precisam viajar para fazer a prova, o que traz maior robustez à evidência. É um insight a ser relevado o fato ou não de viajar para fazer o ENEM, pois entende-se que pode afetar em alguma medida o desempenho na prova.  
 
